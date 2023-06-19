@@ -1,13 +1,15 @@
-import express from 'express'
-import userRoutes from './routes/userRouter'
-import { authentication } from './middlewares/authMiddleWare'
+import express from "express";
+import userRoutes from "./routes/user.route";
+// import { authentication } from "./middlewares/authMiddleWare";
+import cors from "cors";
 
-const app = express()
+const app = express();
 
-app.use(express.json())
-app.use(authentication)
+app.use(cors());
+app.use(express.json());
+// app.use(authentication);
 
 //routes
-app.use('/api', userRoutes)
+app.use("/api/user", userRoutes);
 
 export default app;
