@@ -4,24 +4,20 @@ import {
   getAllUsersService,
 } from "../services/user.services";
 import { Request, Response } from "express";
-import { user } from "../models/user.model";
+import { User } from "../models/user.model";
+import { errors } from "../utils/errors";
 
-export async function userRegister(req: Request, res: Response): Promise<void> {
+export function userRegister(req: Request, res: Response): void {
   const params: string[] = ["name", "last_name", "email", "password"];
   if (checkRequestParams(req.body, params)) {
-    const user: user = req.body;
-    const success = await userRegisterService(user);
-    if (success) {
-      res.json({
-        success,
-        message: "Usuario registrado con exito",
-      });
-    } else {
-      res.json({
-        success: false,
-        message: "El correo se encuentra en uso",
-      });
-    }
+    const user: User = req.body;
+    userRegisterService(user).then((response) => {
+      if (response.success) {
+        res.json({ success: true, message: "Usuario creado con exito" });
+      } else {
+        res.json({ success: false, message: errors[response.error] });
+      }
+    });
   } else {
     res.json({
       success: false,
@@ -30,7 +26,12 @@ export async function userRegister(req: Request, res: Response): Promise<void> {
   }
 }
 
-export async function getAllUsers(req: Request, res: Response) {
-  const listUsers = await getAllUsersService();
-  res.json(listUsers);
+// export function userLogin(req: Request, res: Response) {
+
+// }
+
+export function getAllUsers(_: Request, res: Response) {
+  getAllUsersService().then((users) => {
+    res.json(users);
+  });
 }
