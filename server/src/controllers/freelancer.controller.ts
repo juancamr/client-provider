@@ -1,18 +1,18 @@
 import { checkRequestParams } from "../utils/utils";
-import {
-  userRegisterService,
-  getAllUsersService,
-  userLoginService,
-} from "../services/user.services";
 import { Request, Response } from "express";
-import { User } from "../models/user.model";
 import { errors } from "../utils/errors";
+import {
+  freelancerLoginService,
+  freelancerRegisterService,
+  getAllFreelancersService,
+} from "../services/freelancer.services";
+import { Freelancer } from "../models/freelancer.model";
 
-export function userRegister(req: Request, res: Response): void {
+export function freelancerRegister(req: Request, res: Response): void {
   const params: string[] = ["name", "last_name", "email", "password"];
   if (checkRequestParams(req.body, params)) {
-    const user: User = req.body;
-    userRegisterService(user).then((response) => {
+    const freelancer: Freelancer = req.body;
+    freelancerRegisterService(freelancer).then((response) => {
       if (response.success) {
         res.json({ success: true, message: "Usuario creado con exito" });
       } else {
@@ -27,13 +27,19 @@ export function userRegister(req: Request, res: Response): void {
   }
 }
 
-export function userLogin(req: Request, res: Response) {
+export function freelancerLogin(req: Request, res: Response) {
   const { email, password } = req.body;
-  userLoginService(email, password).then((response) => {
+  freelancerLoginService(email, password).then((response) => {
     if (response.success) {
       res.json({ success: true, user: response.data });
     } else {
       res.json({ success: false, error: errors[response.error] });
     }
+  });
+}
+
+export function getAllFreelancers(_: Request, res: Response) {
+  getAllFreelancersService().then((freelancers) => {
+    res.json(freelancers);
   });
 }

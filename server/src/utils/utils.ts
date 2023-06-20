@@ -1,4 +1,3 @@
-import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
 
 export function checkRequestParams(body: any, params: string[]): boolean {
@@ -13,11 +12,9 @@ export async function encryptPassword(password: string): Promise<string> {
   return await bcrypt.hash(password, saltRounds);
 }
 
-// export function checkSessionToken(headers: object) {
-//   const type = {
-//     1: "User",
-//     2: "Freelancer",
-//   };
-
-//   const Table = type[headers.type];
-// }
+export async function comparePassword(
+  password: string,
+  enteredPassword: string
+): Promise<boolean> {
+  return await bcrypt.compare(password, enteredPassword);
+}

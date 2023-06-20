@@ -1,27 +1,30 @@
 import { User, UserModel } from "../models/user.model";
 import { constants } from "../utils/errors";
-import { encryptPassword } from "../utils/utils";
-import { Response } from "../models/global";
+import { comparePassword, encryptPassword } from "../utils/utils";
+import { Response } from "../models/zglobal";
 
 export async function userRegisterService(user: User): Promise<Response> {
   const filter = { email: { $eq: user.email } };
   const existingUser = await UserModel.findOne(filter);
   if (!existingUser) {
-    new UserModel(user).save();
-    return {success: true, error: ""};
+    new UserModel({
+      ...user,
+      password: await encryptPassword(user.password),
+    }).save();
+    return { success: true, error: "" };
   } else {
-    return {error: constants.USER_ALREADY_EXIST}
+    return { error: constants.USER_ALREADY_EXIST };
   }
 }
 
-export async function userLogin(
+export async function userLoginService(
   emailEntered: string,
   passwordEntered: string
-): Promise<object> {
+): Promise<Response> {
   const userFound = await UserModel.findOne({ email: emailEntered });
   if (userFound) {
-    if (userFound.password === (await encryptPassword(passwordEntered))) {
-      return { success: true };
+    if (await comparePassword(passwordEntered, userFound?.password)) {
+      return { success: true, error: "", data: userFound };
     } else {
       return { error: constants.PASSWORD_NOT_MATCH };
     }
