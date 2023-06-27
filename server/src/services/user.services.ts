@@ -1,18 +1,18 @@
 import { User, UserModel } from "../models/user.model";
-import { constants } from "../utils/errors";
+import { errors } from "../utils/errors";
 import { comparePassword, encryptPassword } from "../utils/utils";
 import { Response } from "../models/zglobal";
 
 export async function userRegisterService(user: User): Promise<Response> {
   const existingUsername = await UserModel.findOne({ username: user.username });
   if (!existingUsername) {
-    new UserModel({
+    await new UserModel({
       ...user,
       password: await encryptPassword(user.password),
     }).save();
     return { success: true, error: "" };
   } else {
-    return { success: false, error: constants.USERNAME_ALREADY_IN_USE };
+    return { success: false, error: errors.USERNAME_ALREADY_IN_USE };
   }
 }
 
@@ -27,7 +27,7 @@ export async function userLoginService(
     if (await comparePassword(passwordEntered, userFoundByUsername?.password)) {
       return { success: true, error: "", data: userFoundByUsername };
     } else {
-      return { error: constants.PASSWORD_NOT_MATCH };
+      return { error: errors.PASSWORD_NOT_MATCH };
     }
   } else {
     const userFoundByEmail = await UserModel.findOne({
@@ -37,10 +37,10 @@ export async function userLoginService(
       if (await comparePassword(passwordEntered, userFoundByEmail?.password)) {
         return { success: true, error: "", data: userFoundByEmail };
       } else {
-        return { error: constants.PASSWORD_NOT_MATCH };
+        return { error: errors.PASSWORD_NOT_MATCH };
       }
     } else {
-      return { error: constants.USER_NOT_EXIST };
+      return { error: errors.USER_NOT_EXIST };
     }
   }
 }

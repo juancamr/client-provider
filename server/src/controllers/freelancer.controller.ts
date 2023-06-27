@@ -1,6 +1,5 @@
 import { checkRequestParams } from "../utils/utils";
 import { Request, Response } from "express";
-import { errors } from "../utils/errors";
 import {
   freelancerLoginService,
   freelancerRegisterService,
@@ -16,7 +15,7 @@ export function freelancerRegister(req: Request, res: Response): void {
       if (response.success) {
         res.json({ success: true, message: "Usuario creado con exito" });
       } else {
-        res.json({ success: false, message: errors[response.error] });
+        res.json({ success: false, message: response.error });
       }
     });
   } else {
@@ -33,7 +32,7 @@ export function freelancerLogin(req: Request, res: Response) {
     if (response.success) {
       res.json({ success: true, user: response.data });
     } else {
-      res.json({ success: false, error: errors[response.error] });
+      res.json({ success: false, error: response.error });
     }
   });
 }

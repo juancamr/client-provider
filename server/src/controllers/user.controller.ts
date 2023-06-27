@@ -22,7 +22,7 @@ export function userRegister(req: Request, res: Response): void {
       if (response.success) {
         res.json({ success: true, message: "Usuario creado con exito" });
       } else {
-        res.json({ success: false, error: errors[response.error] });
+        res.json({ success: false, error: response.error });
       }
     });
   } else {
@@ -33,18 +33,18 @@ export function userRegister(req: Request, res: Response): void {
   }
 }
 
-export function userLogin(req: Request, res: Response) {
+export function userLogin(req: Request, res: Response): void {
   const { username, password } = req.body;
   userLoginService(username, password).then((response) => {
     if (response.success) {
       res.json({ success: true, user: response.data });
     } else {
-      res.json({ success: false, error: errors[response.error] });
+      res.json({ success: false, error: response.error });
     }
   });
 }
 
-export function isUsernameExist(req: Request, res: Response) {
+export function isUsernameExist(req: Request, res: Response): void {
   const { username } = req.body;
 
   isUsernameExistService(username).then((response) => {

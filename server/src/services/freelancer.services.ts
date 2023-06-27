@@ -4,7 +4,7 @@ import {
   FreelancerPublic,
 } from "../models/freelancer.model";
 import { Response } from "../models/zglobal";
-import { constants } from "../utils/errors";
+import { errors } from "../utils/errors";
 import { comparePassword, encryptPassword } from "../utils/utils";
 
 export async function freelancerRegisterService(
@@ -14,13 +14,13 @@ export async function freelancerRegisterService(
     email: freelancer.email,
   });
   if (!freelancerThatExist) {
-    new FreelancerModel({
+    await new FreelancerModel({
       ...freelancer,
       password: await encryptPassword(freelancer.password),
     }).save();
     return { success: true, error: "" };
   } else {
-    return { success: false, error: constants.USER_ALREADY_EXIST };
+    return { success: false, error: errors.USERNAME_ALREADY_IN_USE };
   }
 }
 
@@ -35,10 +35,10 @@ export async function freelancerLoginService(
     if (await comparePassword(passwordEntered, freelancerFound?.password)) {
       return { success: true, error: "", data: freelancerFound };
     } else {
-      return { success: false, error: constants.PASSWORD_NOT_MATCH };
+      return { success: false, error: errors.PASSWORD_NOT_MATCH };
     }
   } else {
-    return { success: false, error: constants.USER_NOT_EXIST };
+    return { success: false, error: errors.USER_NOT_EXIST };
   }
 }
 
