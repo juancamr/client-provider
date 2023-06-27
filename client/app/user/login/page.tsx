@@ -33,6 +33,28 @@ const Login = () => {
   const [method, setMethod] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [verificationCode, setVerificationCode] = useState<string>("");
+  const [isOnVerification, setIsOnVerification] = useState<boolean>(false);
+  const [verificationCodeMessage, setVerificationCodeMessage] =
+    useState<string>("");
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setUserCredentials((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+  };
+
+  const updateVerificationCode = (event: ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    setVerificationCode(value);
+  };
+
+  const changeMethod = () => {
+    setMethod(method === 1 ? 2 : 1);
+  };
+
   const loginPost = async (): Promise<void> => {
     const data = await makePostRequest("/api/user/login", userCredentials);
     const response: Response = await data.json();
@@ -52,37 +74,73 @@ const Login = () => {
       window.location.replace("/user/home");
     } else {
       setIsLoading(false);
+      setIsOnVerification(false);
       document.getElementById("username")?.focus();
       setUsernameMessage(response.error);
     }
   };
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setUserCredentials((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
+  const generateCode = async (): Promise<void> => {
+    const data = await makePostRequest(
+      "/api/verification_code/generate",
+      userCredentials
+    );
+    const response: Response = await data.json();
+    if (response.success) {
+      setIsOnVerification(true);
+    } else {
+      console.log("no se pudo enviar el correo");
+    }
   };
 
-  const changeMethod = () => {
-    setMethod(method === 1 ? 2 : 1);
+  const checkCode = async (): Promise<void> => {
+    const data = await makePostRequest("/api/verification_code/verify", {
+      email: userCredentials.email,
+      code: verificationCode,
+    });
+    const response = await data.json();
+    if (response.success) {
+      setIsLoading(true);
+      registerPost();
+    } else {
+      setVerificationCodeMessage(response.error);
+    }
   };
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsLoading(true);
     if (method === 1) {
+      setIsLoading(true);
       loginPost();
     } else {
-      registerPost();
+      generateCode();
     }
+  };
+
+  const verifyCode = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    checkCode();
   };
 
   if (isLoading) {
     return (
       <main className="flex items-center justify-center h-screen">
         <Loader />
+      </main>
+    );
+  } else if (isOnVerification) {
+    return (
+      <main className="flex items-center justify-center h-screen">
+        <form onSubmit={verifyCode}>
+          <InputText
+            handleChange={updateVerificationCode}
+            data={verificationCode}
+            name="code"
+            label="Code"
+          />
+          <p>{verificationCodeMessage}</p>
+          <button>SUBMIT</button>
+        </form>
       </main>
     );
   } else {
@@ -145,9 +203,7 @@ const Login = () => {
             )}
             <p className="text-center mt-5">O continua con</p>
           </form>
-          <button className="flex rounded shadow-lg p-3 text-center
-          hover:bg-black hover:text-white
-          ">
+          <button className="flex rounded p-3 shadow-lg mt-5">
             <Image
               src="/assets/icons/google.svg"
               alt="google"

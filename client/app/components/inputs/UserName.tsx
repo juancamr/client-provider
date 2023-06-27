@@ -18,7 +18,6 @@ export default function UserName(props: {
       username: value,
     });
     const res: any = await response.json();
-    console.log(res);
     if (res.success) {
       setUserMessage(`${value} se encuentra en uso`);
     } else {
