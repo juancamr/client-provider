@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { getTransporter } from "../config/nodemailer";
 
 export function checkRequestParams(body: any, params: string[]): boolean {
   const paramsEmpty = params.filter((param) => {
@@ -17,4 +18,22 @@ export async function comparePassword(
   enteredPassword: string
 ): Promise<boolean> {
   return await bcrypt.compare(password, enteredPassword);
+}
+
+export function sendEmail(receiver: string, title: string, content: string) {
+  const transporter = getTransporter();
+  const mailOptions = {
+    from: process.env.MY_PERSONAL_EMAIL,
+    to: receiver,
+    subject: title,
+    text: content,
+  };
+
+  transporter.sendMail(mailOptions, function (err, info) {
+    if (err) {
+      console.log(`No se pudo enviar el correo ${err}`);
+    } else {
+      console.log(`Correo enviado ${info.response}`);
+    }
+  });
 }
