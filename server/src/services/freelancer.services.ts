@@ -4,7 +4,7 @@ import {
   FreelancerPublic,
 } from "../models/freelancer.model";
 import { Response } from "../models/zglobal";
-import { errors } from "../utils/errors";
+import { errors } from "../utils/constants";
 import { comparePassword, encryptPassword } from "../utils/utils";
 
 export async function freelancerRegisterService(

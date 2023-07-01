@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { getTransporter } from "../config/nodemailer";
 
 export function checkRequestParams(body: any, params: string[]): boolean {
@@ -36,4 +37,14 @@ export function sendEmail(receiver: string, title: string, content: string) {
       console.log(`Correo enviado ${info.response}`);
     }
   });
+}
+
+export function generateTokenJWT(payload: object): string {
+  const token = jwt.sign(payload, process.env.SECRET_KEY ?? "");
+  return token;
+}
+
+export function decodeTokenJWT(token: string) {
+  const decodedToken = jwt.verify(token, process.env.SECRET_KEY ?? "")
+  return decodedToken;
 }

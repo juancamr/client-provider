@@ -1,6 +1,6 @@
 import { VerificationCodeModel } from "../models/verificationCode.model";
 import { Response } from "../models/zglobal";
-import { errors } from "../utils/errors";
+import { errors } from "../utils/constants";
 import { sendEmail } from "../utils/utils";
 import { UserModel } from "../models/user.model";
 
@@ -20,9 +20,9 @@ export async function generateEmailVerificationCodeService(
       }).save();
       sendEmail(email, "Codigo de verificacion", `${code}`);
     }
-    return { success: true, error: ""}
+    return { success: true, error: "" };
   } else {
-    return { success: false, error: "El correo ya se encuentra en uso"}
+    return { success: false, error: "El correo ya se encuentra en uso" };
   }
 }
 

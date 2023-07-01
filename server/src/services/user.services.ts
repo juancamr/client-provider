@@ -1,16 +1,16 @@
 import { User, UserModel } from "../models/user.model";
-import { errors } from "../utils/errors";
+import { errors } from "../utils/constants";
 import { comparePassword, encryptPassword } from "../utils/utils";
 import { Response } from "../models/zglobal";
 
 export async function userRegisterService(user: User): Promise<Response> {
   const existingUsername = await UserModel.findOne({ username: user.username });
   if (!existingUsername) {
-    await new UserModel({
+    const newUser = await new UserModel({
       ...user,
       password: await encryptPassword(user.password),
     }).save();
-    return { success: true, error: "" };
+    return { success: true, error: "", data: newUser };
   } else {
     return { success: false, error: errors.USERNAME_ALREADY_IN_USE };
   }
