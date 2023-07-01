@@ -38,9 +38,9 @@ export default function InputPassword({
 
   return (
     <>
-      <label htmlFor="password">Contrase&ntilde;a</label>
+      <label htmlFor="password" className="text-gray-600 mb-1">Contrase&ntilde;a</label>
       <input
-        className="rounded shadow border px-1"
+        className="rounded border p-1 px-2"
         onChange={(event) => {
           updateMessage(event);
           handleChange(event);

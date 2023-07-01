@@ -9,13 +9,9 @@ import Button from "@/app/components/inputs/Button";
 import Loader from "@/app/components/dialog/Loader";
 import Image from "next/image";
 import EmailInput from "@/app/components/inputs/EmailInput";
-
-interface Response {
-  success: boolean;
-  message?: string;
-  user?: any;
-  error: string;
-}
+import OrContinueWith from "@/app/components/OrContinueWith";
+import VerificationEmail from "@/app/components/VerificationEmail";
+import { apis } from "@/utils/constants";
 
 const Login = () => {
   useEffect(() => {
@@ -33,10 +29,7 @@ const Login = () => {
   const [method, setMethod] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [verificationCode, setVerificationCode] = useState<string>("");
   const [isOnVerification, setIsOnVerification] = useState<boolean>(false);
-  const [verificationCodeMessage, setVerificationCodeMessage] =
-    useState<string>("");
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -46,18 +39,13 @@ const Login = () => {
     }));
   };
 
-  const updateVerificationCode = (event: ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setVerificationCode(value);
-  };
-
   const changeMethod = () => {
     setMethod(method === 1 ? 2 : 1);
   };
 
   const loginPost = async (): Promise<void> => {
-    const data = await makePostRequest("/api/user/login", userCredentials);
-    const response: Response = await data.json();
+    const data = await makePostRequest(apis.user.LOGIN, userCredentials);
+    const response = await data.json();
     if (response.success) {
       window.location.replace("/user/home");
     } else {
@@ -67,43 +55,16 @@ const Login = () => {
     }
   };
 
-  const registerPost = async (): Promise<void> => {
-    const data = await makePostRequest("/api/user/register", userCredentials);
-    const response: Response = await data.json();
-    if (response.success) {
-      window.location.replace("/user/home");
-    } else {
-      setIsLoading(false);
-      setIsOnVerification(false);
-      document.getElementById("username")?.focus();
-      setUsernameMessage(response.error);
-    }
-  };
-
   const generateCode = async (): Promise<void> => {
     const data = await makePostRequest(
-      "/api/verification_code/generate",
+      apis.email_code.GENERATE,
       userCredentials
     );
-    const response: Response = await data.json();
+    const response = await data.json();
     if (response.success) {
       setIsOnVerification(true);
     } else {
-      console.log("no se pudo enviar el correo");
-    }
-  };
-
-  const checkCode = async (): Promise<void> => {
-    const data = await makePostRequest("/api/verification_code/verify", {
-      email: userCredentials.email,
-      code: verificationCode,
-    });
-    const response = await data.json();
-    if (response.success) {
-      setIsLoading(true);
-      registerPost();
-    } else {
-      setVerificationCodeMessage(response.error);
+      setErrorMessage(response.error)
     }
   };
 
@@ -117,36 +78,13 @@ const Login = () => {
     }
   };
 
-  const verifyCode = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    checkCode();
-  };
-
-  if (isLoading) {
-    return (
-      <main className="flex items-center justify-center h-screen">
-        <Loader />
-      </main>
-    );
-  } else if (isOnVerification) {
-    return (
-      <main className="flex items-center justify-center h-screen">
-        <form onSubmit={verifyCode}>
-          <InputText
-            handleChange={updateVerificationCode}
-            data={verificationCode}
-            name="code"
-            label="Code"
-          />
-          <p>{verificationCodeMessage}</p>
-          <button>SUBMIT</button>
-        </form>
-      </main>
-    );
+  if (isOnVerification) {
+    return <VerificationEmail setIsOnVerification={setIsOnVerification} setUsernameMessage={setUsernameMessage} userCredentials={userCredentials} />;
   } else {
     return (
       <main className="flex items-center h-screen justify-center w-full">
-        <section className="grid">
+        <section className="p-7 shadow-xl border rounded-lg w-96">
+          <h1 className="text-2xl text-black mb-5">INICIAR SESION</h1>
           <form onSubmit={submitForm} className="grid">
             {method == 2 && (
               <div>
@@ -169,7 +107,7 @@ const Login = () => {
               handleChange={handleChange}
               data={userCredentials}
             />
-            <p>{usernameMessage}</p>
+            <p className="mb-3">{usernameMessage}</p>
             {method == 2 && (
               <EmailInput handleChange={handleChange} data={userCredentials} />
             )}
@@ -178,10 +116,10 @@ const Login = () => {
               handleChange={handleChange}
               data={userCredentials}
             />
-            <p>{errorMessage}</p>
+            <p className="text-rose-700">{errorMessage}</p>
             <Button text={method === 1 ? "Ingresar" : "Registrarme"} />
             {method === 1 ? (
-              <p>
+              <p className="text-gray-500 text-sm text-center my-2">
                 A&uacute;n no tienes una cuenta?{" "}
                 <span
                   className="cursor-pointer text-blue-400"
@@ -191,7 +129,7 @@ const Login = () => {
                 </span>
               </p>
             ) : (
-              <p>
+              <p className="text-gray-500 text-sm text-center my-2">
                 Ya tienes una cuenta?{" "}
                 <span
                   className="cursor-pointer text-blue-400"
@@ -201,9 +139,9 @@ const Login = () => {
                 </span>
               </p>
             )}
-            <p className="text-center mt-5">O continua con</p>
+            <OrContinueWith />
           </form>
-          <button className="flex rounded p-3 shadow-lg mt-5">
+          <button className="flex rounded-lg p-3 shadow border mb-2 w-full">
             <Image
               src="/assets/icons/google.svg"
               alt="google"
@@ -213,7 +151,7 @@ const Login = () => {
             />
             Google
           </button>
-          <button className="flex rounded p-3 shadow-lg mt-5">
+          <button className="flex rounded-lg p-3 shadow border w-full">
             <Image
               src="/assets/icons/instagram.svg"
               alt="instagram"

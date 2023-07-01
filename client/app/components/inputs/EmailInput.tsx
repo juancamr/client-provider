@@ -10,7 +10,7 @@ export default function EmailInput(props: {
       <label htmlFor="email">Correo electr&oacute;nico</label>
       <input
         id="email"
-        className="rounded shadow border px-1"
+        className="rounded border p-1 px-2"
         onChange={handleChange}
         value={data.email}
         name="email"

@@ -11,7 +11,7 @@ export default function InputText(props: {
     <div className="grid">
       <label htmlFor={name}>{label}</label>
       <input
-        className="rounded shadow border px-1"
+        className="rounded border p-1 px-2"
         onChange={handleChange}
         value={data[name]}
         name={name}

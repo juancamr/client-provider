@@ -27,11 +27,11 @@ export default function UserName(props: {
 
   return (
     <>
-      <label htmlFor="username">Usuario</label>
+      <label htmlFor="username" className="text-gray-600 mb-1">Usuario</label>
       <input
         id="username"
         autoComplete="off"
-        className="rounded shadow border px-1"
+        className="rounded border p-1 px-2"
         onChange={(event) => {
           if (register) {
             if (event.target.value.length >= 5) {
@@ -46,7 +46,11 @@ export default function UserName(props: {
         name="username"
         type="text"
       />
-      {register && <p>{userMessage}</p>}
+      {register && (
+        <div className="h-6 text-gray-500">
+          <p>{userMessage}</p>
+        </div>
+      )}
     </>
   );
 }
