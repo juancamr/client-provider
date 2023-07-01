@@ -5,10 +5,12 @@ import {
   isUsernameExist,
 } from "../controllers/user.controller";
 
-const router = Router();
+const userRoutesPublic = Router();
 
-router.post("/register", userRegister);
-router.post('/login', userLogin)
-router.post('/is_username_exist', isUsernameExist)
+userRoutesPublic.post("/register", userRegister);
+userRoutesPublic.post("/login", userLogin);
+userRoutesPublic.post("/is_username_exist", isUsernameExist);
 
-export default router;
+const userRoutes = Router();
+
+export { userRoutesPublic, userRoutes };

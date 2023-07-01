@@ -1,10 +1,16 @@
 import { Router } from "express";
-import { freelancerLogin, freelancerRegister, getAllFreelancers } from "../controllers/freelancer.controller";
+import {
+  freelancerLogin,
+  freelancerRegister,
+  getAllFreelancers,
+} from "../controllers/freelancer.controller";
 
-const router = Router()
+const freelancerRoutesPublic = Router();
 
-router.post('/register', freelancerRegister)
-router.post('/login', freelancerLogin)
-router.get('/all', getAllFreelancers)
+freelancerRoutesPublic.post("/register", freelancerRegister);
+freelancerRoutesPublic.post("/login", freelancerLogin);
+freelancerRoutesPublic.get("/all", getAllFreelancers);
 
-export default router
+const freelancerRoutes = Router();
+
+export { freelancerRoutesPublic, freelancerRoutes };

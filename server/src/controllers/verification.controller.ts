@@ -10,11 +10,15 @@ export function generateEmailVerificationCode(
   res: Response
 ): void {
   const verificationCode: VerificationCode = req.body;
-  generateEmailVerificationCodeService(verificationCode.email).then(() => {
-    res.json({
-      success: true,
-    });
-  });
+
+  generateEmailVerificationCodeService(verificationCode.email).then(
+    (response) => {
+      res.json({
+        success: response.success,
+        error: response.error,
+      });
+    }
+  );
 }
 
 export function verifyEmail(req: Request, res: Response): void {
@@ -24,13 +28,13 @@ export function verifyEmail(req: Request, res: Response): void {
     (response) => {
       if (response.success) {
         res.json({
-            success: true,
-        })
+          success: true,
+        });
       } else {
         res.json({
-            success: false,
-            error: response.error
-        })
+          success: false,
+          error: response.error,
+        });
       }
     }
   );

@@ -1,7 +1,7 @@
 import express from "express";
-import userRoutes from "./routes/user.route";
-import freelancerRoutes from './routes/freelancer.route'
-import verificationRoutes from './routes/verification.route'
+import { userRoutesPublic } from "./routes/user.route";
+import { freelancerRoutesPublic } from "./routes/freelancer.route";
+import verificationRoutes from "./routes/verification.route";
 import { authentication } from "./middlewares/authMiddleWare";
 import cors from "cors";
 
@@ -9,11 +9,15 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+//public routes
+app.use("/api/public/user", userRoutesPublic);
+app.use("/api/verification_code", verificationRoutes);
+app.use("/api/public/freelancer", freelancerRoutesPublic);
+
+//middleware
 app.use(authentication);
 
-//routes
-app.use("/api/user", userRoutes);
-app.use('/api/freelancer', freelancerRoutes)
-app.use('/api/verification_code', verificationRoutes)
+//protected routes
 
 export default app;
