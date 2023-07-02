@@ -35,7 +35,7 @@ export async function freelancerLoginService(
     if (await comparePassword(passwordEntered, freelancerFound?.password)) {
       return { success: true, error: "", data: freelancerFound };
     } else {
-      return { success: false, error: errors.PASSWORD_NOT_MATCH };
+      return { success: false, error: errors.INCORRECT_PASSWORD };
     }
   } else {
     return { success: false, error: errors.USER_NOT_EXIST };
