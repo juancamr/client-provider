@@ -41,6 +41,7 @@ export default function VerificationEmail(props: {
     const data = await makePostRequest(apis.user.REGISTER, userCredentials);
     const response = await data.json();
     if (response.success) {
+      localStorage.setItem("token", response.token)
       window.location.replace("/user/home");
     } else {
       setIsOnVerification(false);
