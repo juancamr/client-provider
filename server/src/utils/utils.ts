@@ -21,6 +21,11 @@ export async function comparePassword(
   return await bcrypt.compare(password, enteredPassword);
 }
 
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 export function sendEmail(receiver: string, title: string, content: string) {
   const transporter = getTransporter();
   const mailOptions = {
@@ -30,11 +35,9 @@ export function sendEmail(receiver: string, title: string, content: string) {
     text: content,
   };
 
-  transporter.sendMail(mailOptions, function (err, info) {
+  transporter.sendMail(mailOptions, function (err, _) {
     if (err) {
       console.log(`No se pudo enviar el correo ${err}`);
-    } else {
-      console.log(`Correo enviado ${info.response}`);
     }
   });
 }
@@ -44,7 +47,7 @@ export function generateTokenJWT(payload: object): string {
   return token;
 }
 
-export function decodeTokenJWT(token: string) {
-  const decodedToken = jwt.verify(token, process.env.SECRET_KEY ?? "")
-  return decodedToken;
+export function decodeTokenJWT(token: string): any {
+  const decodedToken = jwt.verify(token, process.env.SECRET_KEY ?? "");
+  return decodedToken as object;
 }
