@@ -5,6 +5,7 @@ export const apis = {
     REGISTER: "/api/public/user/register",
     LOGIN: "/api/public/user/login",
     IS_USERNAME_EXIST: "/api/public/user/is_username_exist",
+    FORGOT_PASSWORD: "/api/public/user/forgot_password"
   },
   email_code: {
     GENERATE: "/api/verification_code/generate",

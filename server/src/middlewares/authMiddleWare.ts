@@ -6,13 +6,21 @@ export function authentication(
   res: Response,
   next: NextFunction
 ) {
-  const token = req.headers.authorization?.split(" ")[1];
+  let token: string = "";
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
   if (!token) {
+    console.log("no se pudo obtener el token");
     return res.status(401).json({ message: "Token no proporcionado" });
   }
   try {
-    const decodedToken = decodeTokenJWT(token);
-    req.body.user = decodedToken;
+    const data = decodeTokenJWT(token);
+    req.body.data = data;
     next();
     return undefined;
   } catch (error) {

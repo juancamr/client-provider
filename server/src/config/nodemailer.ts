@@ -4,7 +4,6 @@ let transporter: Transporter;
 
 export function getTransporter() {
   if (!transporter) {
-    
     transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
