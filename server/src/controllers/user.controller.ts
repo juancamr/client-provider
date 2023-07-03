@@ -14,7 +14,7 @@ import {
 } from "../services/user.services";
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
-import { BASE_URL, errors } from "../utils/constants";
+import { BASE_URL, errors, typeUser } from "../utils/constants";
 export function userRegister(req: Request, res: Response): void {
   const params: string[] = [
     "name",
@@ -27,7 +27,10 @@ export function userRegister(req: Request, res: Response): void {
     const user: User = req.body;
     userRegisterService(user).then((response) => {
       if (response.success) {
-        const token = generateTokenJWT({ id: response.data._id, type: "user" });
+        const token = generateTokenJWT({
+          id: response.data._id,
+          type: typeUser.USER,
+        });
         res.status(201).json({ success: true, token });
       } else {
         res.status(200).json({ success: false, error: response.error });
@@ -45,8 +48,13 @@ export function userLogin(req: Request, res: Response): void {
   const { username, password } = req.body;
   userLoginService(username, password).then((response) => {
     if (response.success) {
-      const token = generateTokenJWT({ id: response.data._id });
-      res.status(200).json({ success: true, token, type: "user" });
+      const token = generateTokenJWT({
+        id: response.data._id,
+        type: typeUser.USER,
+      });
+      res
+        .status(200)
+        .json({ ...response.data._doc, success: true, accessToken: token });
     } else {
       res.status(200).json({ success: false, error: response.error });
     }
@@ -89,8 +97,7 @@ export function forgotPassword(req: Request, res: Response): void {
 }
 
 export function resetPassword(req: Request, res: Response): void {
-  const token: string = req.query.secret?.toString() ?? "";
-  const { password, confirmPassword } = req.body;
+  const { password, confirmPassword, token } = req.body;
   try {
     const data = decodeTokenJWT(token);
     const id = data.id;
@@ -113,4 +120,8 @@ export function resetPassword(req: Request, res: Response): void {
   } catch (error) {
     res.status(400).json({ success: false, error: "Expirado" });
   }
+}
+
+export function updateProfile(_: Request, res: Response): void {
+  res.json({ success: true, message: "estas autorizado" });
 }

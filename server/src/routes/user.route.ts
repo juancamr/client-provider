@@ -5,6 +5,7 @@ import {
   isUsernameExist,
   forgotPassword,
   resetPassword,
+  updateProfile,
 } from "../controllers/user.controller";
 
 const userRoutesPublic = Router();
@@ -16,5 +17,6 @@ userRoutesPublic.post("/forgot_password", forgotPassword);
 userRoutesPublic.post("/reset_password", resetPassword);
 
 const userRoutes = Router();
+userRoutes.patch('/profile', updateProfile)
 
 export { userRoutesPublic, userRoutes };

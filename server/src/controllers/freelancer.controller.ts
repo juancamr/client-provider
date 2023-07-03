@@ -26,7 +26,7 @@ export function freelancerRegister(req: Request, res: Response): void {
   }
 }
 
-export function freelancerLogin(req: Request, res: Response) {
+export function freelancerLogin(req: Request, res: Response): void {
   const { email, password } = req.body;
   freelancerLoginService(email, password).then((response) => {
     if (response.success) {
@@ -37,8 +37,12 @@ export function freelancerLogin(req: Request, res: Response) {
   });
 }
 
-export function getAllFreelancers(_: Request, res: Response) {
+export function getAllFreelancers(_: Request, res: Response): void {
   getAllFreelancersService().then((freelancers) => {
     res.json(freelancers);
   });
+}
+
+export function updateProfile(_: Request, res: Response): void {
+  res.json({ success: true, message: "autorizado" });
 }

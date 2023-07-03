@@ -16,7 +16,7 @@ export function authentication(
 
   if (!token) {
     console.log("no se pudo obtener el token");
-    return res.status(401).json({ message: "Token no proporcionado" });
+    return res.status(401).send("Acceso no autorizado");
   }
   try {
     const data = decodeTokenJWT(token);

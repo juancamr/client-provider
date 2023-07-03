@@ -1,10 +1,14 @@
 import express from "express";
-import { userRoutesPublic } from "./routes/user.route";
-import { freelancerRoutesPublic } from "./routes/freelancer.route";
-import protectedRoutes from "./routes/protected.route";
+import { userRoutes, userRoutesPublic } from "./routes/user.route";
+import {
+  freelancerRoutes,
+  freelancerRoutesPublic,
+} from "./routes/freelancer.route";
 import verificationRoutes from "./routes/verification.route";
 import { authentication } from "./middlewares/authMiddleWare";
 import cors from "cors";
+import { verifyRole } from "./middlewares/roleMiddleWare";
+import { typeUser } from "./utils/constants";
 
 const app = express();
 
@@ -19,6 +23,14 @@ app.use("/api/verification_code", verificationRoutes);
 //middleware
 app.use(authentication);
 
-//protected routes
+app.use("/api/user", verifyRole(typeUser.USER));
+app.use("/api/user", userRoutes);
+
+//mis rutas de usuario
+
+app.use("/api/freelancer", verifyRole(typeUser.FREELANCER));
+app.use('/api/freelancer', freelancerRoutes)
+
+//mis rutas de freelancer
 
 export default app;
