@@ -1,6 +1,3 @@
-import { FreelancerModel } from "../models/freelancer.model";
-import { UserModel } from "../models/user.model";
-
 export const BASE_URL = "https://192.168.1.150:3000";
 
 export const errors = {
@@ -15,7 +12,7 @@ export const errors = {
   CODE_EXPIRED: "El código ingresado expiró",
 };
 
-export const table: { [key: string]: any } = {
-  user: UserModel,
-  freelancer: FreelancerModel,
+export const typeUser = {
+  USER: 1,
+  FREELANCER: 2,
 };

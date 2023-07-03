@@ -1,16 +1,36 @@
-"use client"
+"use client";
+import Button from "@/app/components/inputs/Button";
+import { makePatchRequest } from "@/utils/api";
+import { apis } from "@/utils/constants";
+import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import Link from "next/link";
 
 export default function Home() {
+  const { data: session } = useSession();
+
+  const makeTest = async () => {
+    const data = await makePatchRequest(
+      apis.user.UPDATE_PROFILE,
+      { name: "hola mundo" },
+      session?.user.accessToken as string
+    );
+    const res = await data.json();
+
+    if (res.success) {
+      console.log(res.message);
+    } else {
+      console.log("no estas autorizado");
+    }
+  };
   return (
-    <main className="flex justify-center items-center h-screen">
-      <section className="grid">
-        <h1 className="text-dark">Hola mundo</h1>
-        <Link className="text-red-500" href="/user/login">
-          Sign out
-        </Link>
-      </section>
-    </main>
+    <>
+      <div className="flex items-center justify-center min-h-screen">
+        <div>
+          WELCOME BACK!
+          <Button onClick={() => signOut()} text="Cerrar sesion" />
+          <Button onClick={makeTest} text="Test" />
+        </div>
+      </div>
+    </>
   );
 }

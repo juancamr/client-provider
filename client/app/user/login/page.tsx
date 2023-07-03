@@ -12,11 +12,12 @@ import EmailInput from "@/app/components/inputs/EmailInput";
 import OrContinueWith from "@/app/components/OrContinueWith";
 import VerificationEmail from "@/app/components/VerificationEmail";
 import { apis } from "@/utils/constants";
-import { useRouter } from "next/navigation";
 import ForgotPassword from "@/app/components/ForgotPassword";
+import { redirect } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 const Login = () => {
-  const router = useRouter();
+  // const router = useRouter();
   useEffect(() => {
     document.getElementById("username")?.focus();
   }, []);
@@ -50,18 +51,34 @@ const Login = () => {
     setIsForgotPassword(true);
   };
 
-  const loginPost = async (): Promise<void> => {
-    const data = await makePostRequest(apis.user.LOGIN, userCredentials);
-    const response = await data.json();
-    if (response.success) {
-      const token = response.token;
-      localStorage.setItem("token", token);
-      router.push("/user/home");
-    } else {
-      setIsLoading(false);
-      document.getElementById("username")?.focus();
-      setErrorMessage(response.error);
-    }
+  // const loginPost = async (): Promise<void> => {
+  //   const data = await makePostRequest(apis.user.LOGIN, userCredentials);
+  //   const response = await data.json();
+  //   if (response.success) {
+  //     const token = response.token;
+  //     localStorage.setItem("token", token);
+  //     document.location.replace('/user/home')
+  //   } else {
+  //     setIsLoading(false);
+  //     document.getElementById("username")?.focus();
+  //     setErrorMessage(response.error);
+  //   }
+  // };
+
+  const loginPost = async () => {
+    await signIn("credentials", {
+      username: userCredentials.username,
+      password: userCredentials.password,
+      redirect: true,
+      callbackUrl: "/user/home",
+    });
+  };
+
+  const googleLogin = async () => {
+    await signIn("google", {
+      redirect: true,
+      callbackUrl: "/user/home",
+    });
   };
 
   const generateCode = async (): Promise<void> => {
@@ -96,7 +113,7 @@ const Login = () => {
             userCredentials={userCredentials}
           />
         ) : isForgotPassword ? (
-          <ForgotPassword setIsForgotPassword={setIsForgotPassword}/>
+          <ForgotPassword setIsForgotPassword={setIsForgotPassword} />
         ) : (
           <>
             <h1 className="text-2xl text-black mb-5">INICIAR SESION</h1>
@@ -167,7 +184,10 @@ const Login = () => {
               )}
               <OrContinueWith />
             </form>
-            <button className="flex rounded-lg p-3 shadow border mb-2 w-full">
+            <button
+              onClick={googleLogin}
+              className="flex rounded-lg p-3 justify-center shadow border mb-2 w-full"
+            >
               <Image
                 src="/assets/icons/google.svg"
                 alt="google"
@@ -175,17 +195,7 @@ const Login = () => {
                 width="24"
                 height="24"
               />
-              Google
-            </button>
-            <button className="flex rounded-lg p-3 shadow border w-full">
-              <Image
-                src="/assets/icons/instagram.svg"
-                alt="instagram"
-                width="24"
-                height="24"
-                className="mr-3"
-              />
-              Instagram
+              Continua con Google
             </button>
           </>
         )}
