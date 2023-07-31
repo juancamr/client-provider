@@ -1,99 +1,57 @@
-import {
-  checkRequestParams,
-  decodeTokenJWT,
-  generateTokenJWT,
-  isValidEmail,
-  sendEmail,
-} from "../utils/utils";
-import {
-  userRegisterService,
-  userLoginService,
-  isUsernameExistService,
-  resetPasswordService,
-  forgotPasswordService,
-} from "../services/user.services";
+import * as services from "../services/user.services";
 import { Request, Response } from "express";
-import { User } from "../models/user.model";
-import { BASE_URL, errors, typeUser } from "../utils/constants";
+import { DocumentUser, User, UserModel } from "../models/user.model";
+import { BASE_URL, TYPE_MODEL } from "../common/constants";
+import { created, errorByType, ok } from "../utils/requestUtils";
+import { decodeTokenJWT, generateTokenJWT } from "../utils/encryptionUtils";
+import { sendMail } from "../utils/helper";
+import { errOther } from "../common/errors/others.error";
+
 export function userRegister(req: Request, res: Response): void {
-  const params: string[] = [
-    "name",
-    "last_name",
-    "username",
-    "email",
-    "password",
-  ];
-  if (checkRequestParams(req.body, params)) {
-    const user: User = req.body;
-    userRegisterService(user).then((response) => {
-      if (response.success) {
-        const token = generateTokenJWT({
-          id: response.data._id,
-          type: typeUser.USER,
-        });
-        res.status(201).json({ success: true, token });
-      } else {
-        res.status(200).json({ success: false, error: response.error });
-      }
-    });
-  } else {
-    res.json({
-      success: false,
-      message: "Parametros insuficientes",
-    });
-  }
+  const user: User = req.body;
+  services.userRegisterService(user).then((response) => {
+    if (response.success) {
+      const accessToken = generateTokenJWT({
+        id: response.data._id,
+        type: TYPE_MODEL.USER,
+      });
+      created(res, response.data, accessToken);
+    } else errorByType(res, response.error);
+  });
 }
 
 export function userLogin(req: Request, res: Response): void {
-  const { username, password } = req.body;
-  userLoginService(username, password).then((response) => {
+  const user: User = req.body;
+  services.userLoginService(user.username, user.password).then((response) => {
     if (response.success) {
-      const token = generateTokenJWT({
+      const accessToken = generateTokenJWT({
         id: response.data._id,
-        type: typeUser.USER,
+        type: TYPE_MODEL.USER,
       });
-      res
-        .status(200)
-        .json({ ...response.data._doc, success: true, accessToken: token });
-    } else {
-      res.status(200).json({ success: false, error: response.error });
-    }
+      ok(res, { data: response.data, accessToken });
+    } else errorByType(res, response.error);
   });
 }
 
-export function isUsernameExist(req: Request, res: Response): void {
-  const { username } = req.body;
-
-  isUsernameExistService(username).then((response) => {
-    if (response.success) {
-      res.status(200).json({ success: true });
-    } else {
-      res.status(200).json({
-        success: false,
-      });
-    }
-  });
+export async function deleteUser(req: Request, res: Response): Promise<void> {
+  const username = req.params.username as string;
+  await UserModel.deleteOne({ username });
+  res.status(204).end();
 }
 
 export function forgotPassword(req: Request, res: Response): void {
   const { email } = req.body;
-  if (isValidEmail(email)) {
-    forgotPasswordService(email).then((response) => {
-      if (response.success) {
-        const token = generateTokenJWT({ id: response.data.id });
-        sendEmail(
-          email,
-          "Reset password",
-          `${BASE_URL}/api/public/user/reset_password?secret=${token}`
-        );
-        res.status(200).json({ success: true });
-      } else {
-        res.status(200).json({ success: false, error: response.error });
-      }
-    });
-  } else {
-    res.status(200).json({ success: false, error: errors.EMAIL_INVALID });
-  }
+  services.forgotPasswordService(email).then((response) => {
+    if (response.success) {
+      const token = generateTokenJWT({ id: response.data.id });
+      sendMail(
+        email,
+        "Reset password",
+        `${BASE_URL}/api/public/user/reset_password?secret=${token}`
+      );
+      ok(res);
+    } else errorByType(res, response.error);
+  });
 }
 
 export function resetPassword(req: Request, res: Response): void {
@@ -102,26 +60,16 @@ export function resetPassword(req: Request, res: Response): void {
     const data = decodeTokenJWT(token);
     const id = data.id;
     if (password === confirmPassword) {
-      resetPasswordService(id, password).then((response) => {
-        if (response.success) {
-          res.status(200).json({
-            success: true,
-            message: "Contrase&ntilde;ia cambiada con &eacute;xito",
-          });
-        } else {
-          res.status(200).json({ success: false, error: response.error });
-        }
+      services.resetPasswordService(id, password).then((response) => {
+        response.success ? ok(res) : errorByType(res, response.error);
       });
-    } else {
-      res
-        .status(200)
-        .json({ success: false, error: errors.PASSWORD_NOT_MATCH });
-    }
+    } else errorByType(res, errOther.CODE_EXPIRED);
   } catch (error) {
     res.status(400).json({ success: false, error: "Expirado" });
   }
 }
 
-export function updateProfile(_: Request, res: Response): void {
-  res.json({ success: true, message: "estas autorizado" });
+export function updateProfile(req: Request, res: Response): void {
+  const user = req.body.data as DocumentUser;
+  ok(res, { data: user });
 }

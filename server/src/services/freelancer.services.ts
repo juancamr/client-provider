@@ -1,52 +1,71 @@
+import { errEmail } from "../common/errors/email.error";
+import { errPass } from "../common/errors/password.error";
+import { errUser } from "../common/errors/user.error";
 import {
   Freelancer,
   FreelancerModel,
   FreelancerPublic,
 } from "../models/freelancer.model";
 import { Response } from "../models/zglobal";
-import { errors } from "../utils/constants";
-import { comparePassword, encryptPassword } from "../utils/utils";
+import { comparePassword, encryptPassword } from "../utils/encryptionUtils";
+import { res } from "../utils/helper";
+
+async function findByUsername(username: string) {
+  return await FreelancerModel.findOne({ username });
+}
+async function findByEmail(email: string) {
+  return await FreelancerModel.findOne({ email });
+}
 
 export async function freelancerRegisterService(
   freelancer: Freelancer
 ): Promise<Response> {
-  const freelancerThatExist = await FreelancerModel.findOne({
-    email: freelancer.email,
-  });
-  if (!freelancerThatExist) {
-    await new FreelancerModel({
-      ...freelancer,
-      password: await encryptPassword(freelancer.password),
-    }).save();
-    return { success: true, error: "" };
+  const freelancerFoundByUsername = await findByUsername(freelancer.username);
+  if (freelancerFoundByUsername) {
+    return res(false, errUser.USERNAME_ALREADY_IN_USE);
   } else {
-    return { success: false, error: errors.USERNAME_ALREADY_IN_USE };
+    const freelancerFoundByEmail = await findByEmail(freelancer.email);
+    if (freelancerFoundByEmail) {
+      return res(false, errEmail.EMAIL_ALREADY_IN_USE);
+    } else {
+      const newFreelancer = await new FreelancerModel({
+        ...freelancer,
+        password: await encryptPassword(freelancer.password),
+      }).save();
+      return res(true, newFreelancer);
+    }
   }
 }
 
 export async function freelancerLoginService(
-  emailEntered: string,
+  usernameEntered: string,
   passwordEntered: string
 ): Promise<Response> {
-  const freelancerFound = await FreelancerModel.findOne({
-    email: emailEntered,
-  });
-  if (freelancerFound) {
-    if (await comparePassword(passwordEntered, freelancerFound?.password)) {
-      return { success: true, error: "", data: freelancerFound };
-    } else {
-      return { success: false, error: errors.INCORRECT_PASSWORD };
-    }
+  const freelancerFoundByUsername = await findByUsername(usernameEntered);
+  if (freelancerFoundByUsername) {
+    const password = freelancerFoundByUsername.password;
+    if (await comparePassword(passwordEntered, password)) {
+      return res(true, freelancerFoundByUsername);
+    } else return res(false, errPass.INCORRECT_PASSWORD);
   } else {
-    return { success: false, error: errors.USER_NOT_EXIST };
+    const freelancerFoundByEmail = await findByEmail(usernameEntered);
+    if (freelancerFoundByEmail) {
+      const password = freelancerFoundByEmail.password;
+      if (await comparePassword(passwordEntered, password)) {
+        return res(true, freelancerFoundByEmail);
+      } else return res(false, errPass.INCORRECT_PASSWORD);
+    } else {
+      return res(false, errUser.USER_NOT_EXIST);
+    }
   }
 }
 
 export async function getAllFreelancersService(): Promise<FreelancerPublic[]> {
   const freelancers: Freelancer[] = await FreelancerModel.find();
-  return freelancers.map(({ name, last_name, email, picture }) => ({
+  return freelancers.map(({ name, last_name, username, email, picture }) => ({
     name,
     last_name,
+    username,
     email,
     picture,
   }));

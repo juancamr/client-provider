@@ -12,7 +12,7 @@ export function verifyRole(role: number) {
       return undefined;
     } else {
       console.log("Acceso no autorizado");
-      return res.status(403).send("Acceso no autorizado");
+      return res.status(401).send("Acceso no autorizado");
     }
   };
 }

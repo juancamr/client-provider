@@ -1,48 +1,59 @@
-import { checkRequestParams } from "../utils/utils";
 import { Request, Response } from "express";
+import * as services from "../services/freelancer.services";
+import { created, errorByType, ok } from "../utils/requestUtils";
 import {
-  freelancerLoginService,
-  freelancerRegisterService,
-  getAllFreelancersService,
-} from "../services/freelancer.services";
-import { Freelancer } from "../models/freelancer.model";
+  DocumentFreelancer,
+  Freelancer,
+  FreelancerModel,
+} from "../models/freelancer.model";
+import { generateTokenJWT } from "../utils/encryptionUtils";
+import { TYPE_MODEL } from "../common/constants";
 
 export function freelancerRegister(req: Request, res: Response): void {
-  const params: string[] = ["name", "last_name", "email", "password"];
-  if (checkRequestParams(req.body, params)) {
-    const freelancer: Freelancer = req.body;
-    freelancerRegisterService(freelancer).then((response) => {
-      if (response.success) {
-        res.json({ success: true, message: "Usuario creado con exito" });
-      } else {
-        res.json({ success: false, message: response.error });
-      }
-    });
-  } else {
-    res.json({
-      success: false,
-      message: "Parametros insuficientes",
-    });
-  }
+  const freelancer: Freelancer = req.body;
+  services.freelancerRegisterService(freelancer).then((response) => {
+    if (response.success) {
+      const accessToken = generateTokenJWT({
+        id: response.data._id,
+        type: TYPE_MODEL.FREELANCER,
+      });
+      created(res, response.data, accessToken);
+    } else errorByType(res, response.error);
+  });
 }
 
 export function freelancerLogin(req: Request, res: Response): void {
-  const { email, password } = req.body;
-  freelancerLoginService(email, password).then((response) => {
-    if (response.success) {
-      res.json({ success: true, user: response.data });
-    } else {
-      res.json({ success: false, error: response.error });
-    }
-  });
+  const freelancer: Freelancer = req.body;
+  services
+    .freelancerLoginService(freelancer.username, freelancer.password)
+    .then((response) => {
+      if (response.success) {
+        const accessToken = generateTokenJWT({
+          id: response.data._id,
+          type: TYPE_MODEL.FREELANCER,
+        });
+        ok(res, { data: response.data, accessToken });
+      } else errorByType(res, response.error);
+    });
+}
+
+export async function deleteFreelancer(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const username = req.params.username as string;
+  await FreelancerModel.deleteOne({ username });
+  res.status(204).end();
 }
 
 export function getAllFreelancers(_: Request, res: Response): void {
-  getAllFreelancersService().then((freelancers) => {
-    res.json(freelancers);
+  services.getAllFreelancersService().then((freelancers) => {
+    ok(res, freelancers);
   });
 }
 
-export function updateProfile(_: Request, res: Response): void {
-  res.json({ success: true, message: "autorizado" });
+export function updateProfile(req: Request, res: Response): void {
+  const freelancer = req.body.data as DocumentFreelancer;
+  console.log(freelancer);
+  ok(res, freelancer);
 }

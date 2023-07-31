@@ -1,6 +1,7 @@
-import { Schema, model } from "mongoose";
+import { Schema, ObjectId, model, Types, Document } from "mongoose";
 
 export interface User {
+  _id: ObjectId;
   name: string;
   last_name: string;
   username: string;
@@ -32,5 +33,13 @@ const userSchema = new Schema<User>({
     required: true,
   },
 });
+
+export type DocumentUser = Document<unknown, {}, User> &
+  Omit<
+    User & {
+      _id: Types.ObjectId;
+    },
+    never
+  >;
 
 export const UserModel = model<User>("user", userSchema);

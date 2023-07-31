@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { decodeTokenJWT } from "../utils/utils";
+import { decodeTokenJWT } from "../utils/encryptionUtils";
+import { errorByType } from "../utils/requestUtils";
+import { errOther } from "../common/errors/others.error";
 
 export function authentication(
   req: Request,
@@ -15,15 +17,19 @@ export function authentication(
   }
 
   if (!token) {
-    console.log("no se pudo obtener el token");
-    return res.status(401).send("Acceso no autorizado");
+    // console.log("no se pudo obtener el token");
+    return errorByType(res, errOther.UNAUTHORIZED_ACCESS);
   }
   try {
     const data = decodeTokenJWT(token);
     req.body.data = data;
     next();
     return undefined;
-  } catch (error) {
-    return res.status(401).json({ message: "Token invalido" });
+  } catch (err) {
+    console.log(err);
+    return errorByType(res, {
+      ...errOther.UNAUTHORIZED_ACCESS,
+      message: "Token invalido",
+    });
   }
 }

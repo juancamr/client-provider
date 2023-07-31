@@ -1,8 +1,9 @@
 import { VerificationCodeModel } from "../models/verificationCode.model";
 import { Response } from "../models/zglobal";
-import { errors } from "../utils/constants";
-import { sendEmail } from "../utils/utils";
+import { sendMail } from "../utils/helper";
 import { UserModel } from "../models/user.model";
+import { errEmail } from "../common/errors/email.error";
+import { errOther } from "../common/errors/others.error";
 
 export async function generateEmailVerificationCodeService(
   email: string
@@ -18,11 +19,11 @@ export async function generateEmailVerificationCodeService(
         code,
         email,
       }).save();
-      sendEmail(email, "Codigo de verificacion", `${code}`);
+      sendMail(email, "Codigo de verificacion", `${code}`);
     }
-    return { success: true, error: "" };
+    return { success: true };
   } else {
-    return { success: false, error: "El correo ya se encuentra en uso" };
+    return { success: false, error: errEmail.EMAIL_ALREADY_IN_USE };
   }
 }
 
@@ -33,11 +34,11 @@ export async function verifyEmailService(
   const codeFound = await VerificationCodeModel.findOne({ email });
   if (codeFound) {
     if (codeFound.code === code) {
-      return { success: true, error: "" };
+      return { success: true };
     } else {
-      return { success: false, error: errors.WRONG_CODE };
+      return { success: false, error: errOther.WRONG_CODE };
     }
   } else {
-    return { success: false, error: errors.CODE_EXPIRED };
+    return { success: false, error: errOther.CODE_EXPIRED };
   }
 }
